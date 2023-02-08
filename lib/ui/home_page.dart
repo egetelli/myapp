@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
+import 'package:intl/intl.dart';
 import 'package:myapp/services/theme_services.dart';
 import 'package:get/get.dart';
 import '../services/notification_services.dart';
@@ -29,9 +30,21 @@ class _HomePageState extends State<HomePage> {
       appBar: _appBar(),
       body: Column(
         children: [
-          Text(
-            "Theme Mode and Notification",
-            style: TextStyle(fontSize: 30),
+          Row(
+            children: [
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      DateFormat.yMMMMd().format(DateTime.now()),
+                    ),
+                    Text("Today"),
+                  ],
+                ),
+              )
+            ],
           )
         ],
       ),
@@ -40,6 +53,8 @@ class _HomePageState extends State<HomePage> {
 
   _appBar() {
     return AppBar(
+      elevation: 0,
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       leading: GestureDetector(
         onTap: () {
           ThemeService().switchTheme();
@@ -51,14 +66,16 @@ class _HomePageState extends State<HomePage> {
           notifyHelper.scheduledNotification();
         },
         child: Icon(
-          Icons.nightlight_round,
+          Get.isDarkMode ? Icons.sunny : Icons.nightlight_round,
           size: 20,
+          color: Get.isDarkMode ? Colors.white : Colors.black,
         ),
       ),
       actions: [
-        Icon(
-          Icons.person,
-          size: 20,
+        CircleAvatar(
+          backgroundImage: AssetImage(
+            "images/profile.png",
+          ),
         ),
         SizedBox(
           width: 20,
