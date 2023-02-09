@@ -4,8 +4,12 @@ import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:myapp/controllers/task_controller.dart';
 import 'package:myapp/ui/theme.dart';
+import 'package:myapp/ui/widgets/button.dart';
 import 'package:myapp/ui/widgets/input_field.dart';
+
+import '../models/task.dart';
 
 class AddTaskPage extends StatefulWidget {
   const AddTaskPage({super.key});
@@ -15,6 +19,9 @@ class AddTaskPage extends StatefulWidget {
 }
 
 class _AddTaskPageState extends State<AddTaskPage> {
+  final TaskController _taskController = Get.put(TaskController());
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _noteController = TextEditingController();
   Color yellowClr = Color.fromARGB(255, 236, 169, 45);
   Color pinkClr = Color.fromARGB(255, 211, 9, 103);
   Color primaryClr = Color.fromARGB(255, 91, 32, 230);
@@ -43,7 +50,10 @@ class _AddTaskPageState extends State<AddTaskPage> {
       appBar: _appBar(context),
       body: SingleChildScrollView(
         child: Container(
-          padding: const EdgeInsets.only(left: 20, right: 20),
+          padding: const EdgeInsets.only(
+            left: 20,
+            right: 20,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -51,8 +61,16 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 "Add Task",
                 style: headingStyle,
               ),
-              MyInputField(title: "Title", hint: "Enter your yitle"),
-              MyInputField(title: "Note", hint: "Enter your note"),
+              MyInputField(
+                title: "Title",
+                hint: "Enter your title",
+                controller: _titleController,
+              ),
+              MyInputField(
+                title: "Note",
+                hint: "Enter your note",
+                controller: _noteController,
+              ),
               MyInputField(
                 title: "Date",
                 hint: DateFormat.yMd().format(_selectedDate),
@@ -168,55 +186,59 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 height: 18,
               ),
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Color",
-                        style: titleStyle,
-                      ),
-                      SizedBox(
-                        height: 8.0,
-                      ),
-                      Wrap(
-                        children: List<Widget>.generate(3, (int index) {
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _selectedColor = index;
-                              });
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: CircleAvatar(
-                                radius: 14,
-                                backgroundColor: index == 0
-                                    ? primaryClr
-                                    : index == 1
-                                        ? pinkClr
-                                        : yellowClr,
-                                child: _selectedColor == index
-                                    ? Icon(
-                                        Icons.done,
-                                        color: Colors.white,
-                                        size: 16,
-                                      )
-                                    : Container(),
-                              ),
-                            ),
-                          );
-                        }),
-                      )
-                    ],
+                  _colorPallette(),
+                  MyButton(
+                    label: "Create Task",
+                    onTap: () => _validateDate(),
                   )
                 ],
-              )
+              ),
+              SizedBox(
+                height: 60,
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  _validateDate() {
+    if (_titleController.text.isNotEmpty && _noteController.text.isNotEmpty) {
+      _addTaskToDb();
+      Get.back();
+    } else if (_titleController.text.isEmpty || _noteController.text.isEmpty) {
+      Get.snackbar(
+        "Required",
+        "All fields are required !",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.white,
+        colorText: pinkClr,
+        icon: Icon(
+          Icons.warning_amber_rounded,
+          color: pinkClr,
+        ),
+      );
+    }
+  }
+
+  _addTaskToDb() async {
+    int value = await _taskController.addTask(
+        task: Task(
+      note: _noteController.text,
+      title: _titleController.text,
+      date: DateFormat.yMd().format(_selectedDate),
+      startTime: _startTime,
+      endTime: _endTime,
+      remind: _selectedRemind,
+      repeat: _selectedRepeat,
+      color: _selectedColor,
+      isCompleted: 0,
+    ));
+    print("My id is" + " $value");
   }
 
   _appBar(BuildContext context) {
@@ -242,6 +264,51 @@ class _AddTaskPageState extends State<AddTaskPage> {
         SizedBox(
           width: 20,
         ),
+      ],
+    );
+  }
+
+  _colorPallette() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Color",
+          style: titleStyle,
+        ),
+        SizedBox(
+          height: 8.0,
+        ),
+        Wrap(
+          children: List<Widget>.generate(3, (int index) {
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedColor = index;
+                  print("$index");
+                });
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: CircleAvatar(
+                  radius: 14,
+                  backgroundColor: index == 0
+                      ? primaryClr
+                      : index == 1
+                          ? pinkClr
+                          : yellowClr,
+                  child: _selectedColor == index
+                      ? Icon(
+                          Icons.done,
+                          color: Colors.white,
+                          size: 16,
+                        )
+                      : Container(),
+                ),
+              ),
+            );
+          }),
+        )
       ],
     );
   }
