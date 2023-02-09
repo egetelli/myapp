@@ -4,6 +4,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:myapp/controllers/task_controller.dart';
 import 'package:myapp/services/theme_services.dart';
 import 'package:get/get.dart';
 import 'package:myapp/ui/add_task_bar.dart';
@@ -20,6 +21,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   DateTime _selectedDate = DateTime.now();
+  final _taskController = Get.put(TaskController());
   var notifyHelper;
   @override
   void initState() {
@@ -38,8 +40,27 @@ class _HomePageState extends State<HomePage> {
         children: [
           _addTaskBar(),
           _addDateBar(),
+          _showTasks(),
         ],
       ),
+    );
+  }
+
+  _showTasks() {
+    return Expanded(
+      child: Obx(() {
+        return ListView.builder(
+            itemCount: _taskController.taskList.length,
+            itemBuilder: (_, context) {
+              print(_taskController.taskList.length);
+              return Container(
+                width: 100,
+                height: 50,
+                color: Colors.red,
+                margin: const EdgeInsets.only(bottom: 10),
+              );
+            });
+      }),
     );
   }
 
@@ -91,7 +112,11 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           MyButton(
-              label: "+ Add Task", onTap: () => Get.to(() => AddTaskPage()))
+              label: "+ Add Task",
+              onTap: () async {
+                await Get.to(() => AddTaskPage());
+                _taskController.getTasks();
+              })
         ],
       ),
     );
