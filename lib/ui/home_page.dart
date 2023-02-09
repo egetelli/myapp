@@ -35,7 +35,10 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: _appBar(),
       body: Column(
-        children: [_addTaskBar(), _addDateBar()],
+        children: [
+          _addTaskBar(),
+          _addDateBar(),
+        ],
       ),
     );
   }
