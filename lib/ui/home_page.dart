@@ -62,11 +62,16 @@ class _HomePageState extends State<HomePage> {
         return ListView.builder(
             itemCount: _taskController.taskList.length,
             itemBuilder: (_, index) {
-              print(_taskController.taskList.length);
               Task task = _taskController.taskList[index];
-              Get.back();
               print(task.toJson());
               if (task.repeat == 'Daily') {
+                DateTime date =
+                    DateFormat.jm().parse(task.startTime.toString());
+                var myTime = DateFormat("HH:mm").format(date);
+                notifyHelper.scheduledNotification(
+                    int.parse(myTime.toString().split(":")[0]),
+                    int.parse(myTime.toString().split(":")[1]),
+                    task);
                 return AnimationConfiguration.staggeredList(
                   position: index,
                   child: SlideAnimation(
@@ -276,7 +281,6 @@ class _HomePageState extends State<HomePage> {
               body: Get.isDarkMode
                   ? "Activated Light Theme"
                   : "Activated Dark Theme");
-          notifyHelper.scheduledNotification();
         },
         child: Icon(
           Get.isDarkMode ? Icons.sunny : Icons.nightlight_round,
